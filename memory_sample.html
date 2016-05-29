@@ -1,0 +1,41 @@
+<html>
+
+  <head>
+    <title></title>
+    <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="js/memory_sample.js"></script>
+    <link rel="stylesheet" type="text/css" href=css/memory.css>
+  </head>
+
+  <body>
+
+    <audio id = "tone">
+      <source src="sound/A-Tone-His_Self-1266414414.mp3">
+    </audio>
+
+    <div id = "SaveData">
+      <p id = "send"> Save Data </p>
+    </div>
+
+    <div id = "StartStop"> 
+      <p id = "ctrl"> Start </p>
+    </div> 
+
+    <div id ="container">
+      <p class = "letters"; id = "first"> </p>
+      <p class = "letters"; id = "second"> </p>
+      <p class = "letters"; id = "third"> </p>
+      <p class = "letters"; id = "fourth"> </p>
+      <p class = "letters"; id = "fifth"> </p>
+      <p class = "letters"; id = "sixth"> </p>
+    </div>
+
+    <div id="circle">
+    </div>
+
+    <script>
+      document.addEventListener('touchstart',function(event){audio.play();},false);
+    </script>
+
+  </body>
+  
