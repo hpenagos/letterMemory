@@ -8,7 +8,7 @@ var MaxTrials = 150;
     Rest Screen appears Delays[4] ms after Probe Set;
     NextTrial starts Delays[5] ms after Rest Screen; */
 
-var Delays = [0,1000,1000,2800,2000,2000];
+var Delays = [0,1000,1000,2800,10000,2000];
 
 /* Prepare sound stuff */
 function init() {
