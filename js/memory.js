@@ -10,8 +10,38 @@ var MaxTrials = 150;
 
 var Delays = [0,1000,1000,2800,10000,2000];
 
+function whichTaskVersion() {
+    var url = document.createElement('a');
+    url.href = location.href;
+    url = url.search.slice(1); //to cut "?" char
+    var params = {};
+    url = url.split("&"); // ['this=true','that=good']
+    for(var i = 0; i<url.length; i++){
+
+	var split_cache = url[i].split("="); // ['this','true']
+	params[split_cache[0]] = split_cache[1]; // {this:true}
+
+    }
+    for (var prop in params) {
+	if (params.hasOwnProperty("presStyle")) {
+	    presStyle = params.presStyle;
+	}
+    }
+    console.log(params);
+}
+
+var testType = "single"; 
+/* This variable determines the type of probe to be displayed: single or group
+   letters*/
+
+var presStyle = "sequential";
+/* This variable determines if memory set is presented as a sequence or simultaneously */
+
+var timehandle;
+
 /* Prepare sound stuff */
 function init() {
+    /* First section initializes sound library */
     /* if initializeDefaultPlugins returns false, we cannot play sound in this browser*/
     if (!createjs.Sound.initializeDefaultPlugins()) {return;}
 
@@ -22,6 +52,9 @@ function init() {
 
     createjs.Sound.alternateExtensions = ["mp3"];
     createjs.Sound.registerSounds(sounds, audioPath);
+
+    /* Second section determines task details */
+    whichTaskVersion();
 }
 
 /* Sample without replacement from an array */
@@ -74,6 +107,7 @@ function createDataArray(ntrials) {
         for (var j=0; j<2; j++) {
             Data[i][j] = new Array(6).fill('#');
         }
+	Data[i][2] = " ";
     }
     return Data;
 }
@@ -88,6 +122,7 @@ function fillDataArrayTwo(arr,cons) {
             arr[i][0][j+2] = tmpMem[j];
             arr[i][1][j+2] = tmpMem[j];
         }
+	arr[i][2] = getRandomSubarray(tmpMem,1);
     }
 
     /* False probes */
@@ -99,6 +134,7 @@ function fillDataArrayTwo(arr,cons) {
             arr[i][0][j+2] = tmpMem[j];
             arr[i][1][j+2] = tmpPrb[j];
         }
+	arr[i][2] = getRandomSubarray(tmpPrb,1);       
     }
 }
 
@@ -112,6 +148,7 @@ function fillDataArrayFour(arr,cons) {
             arr[i][0][j+1] = tmpMem[j];
             arr[i][1][j+1] = tmpMem[j];
         }
+	arr[i][2] = getRandomSubarray(tmpMem,1);
     }
 
     /* False probes */
@@ -123,6 +160,7 @@ function fillDataArrayFour(arr,cons) {
             arr[i][0][j+1] = tmpMem[j];
             arr[i][1][j+1] = tmpPrb[j];
         }
+	arr[i][2] = getRandomSubarray(tmpPrb,1);
     }
 }
 
@@ -136,6 +174,7 @@ function fillDataArraySix(arr,cons) {
             arr[i][0][j] = tmpMem[j];
             arr[i][1][j] = tmpMem[j];
         }
+	arr[i][2] = getRandomSubarray(tmpMem,1);
     }
 
     /* False probes */
@@ -147,6 +186,7 @@ function fillDataArraySix(arr,cons) {
             arr[i][0][j] = tmpMem[j];
             arr[i][1][j] = tmpPrb[j];
         }
+	arr[i][2] = getRandomSubarray(tmpPrb,1);
     }
 }
 
@@ -185,6 +225,8 @@ function DrawCircle(){
     document.getElementById("fifth").style.display = "none";
     document.getElementById("sixth").style.display = "none";
 
+    document.getElementById("single").style.display = "none";
+
     document.getElementById("options").style.display = "none";
     document.getElementById("match").style.display = "none";
     document.getElementById("nomatch").style.display = "none";
@@ -196,20 +238,58 @@ function DisplayMemorySet(trialnumber,trialarray) {
     available = false;
 
     document.getElementById("circle").style.display = "none";
-    document.getElementById("first").style.display = "inline";
-    document.getElementById("second").style.display = "inline";
-    document.getElementById("third").style.display = "inline";
-    document.getElementById("fourth").style.display = "inline";
-    document.getElementById("fifth").style.display = "inline";
-    document.getElementById("sixth").style.display = "inline";
 
-    document.getElementById("first").innerHTML = trialarray[trialnumber][0][0];
-    document.getElementById("second").innerHTML = trialarray[trialnumber][0][1];
-    document.getElementById("third").innerHTML = trialarray[trialnumber][0][2];
-    document.getElementById("fourth").innerHTML = trialarray[trialnumber][0][3];
-    document.getElementById("fifth").innerHTML = trialarray[trialnumber][0][4];
-    document.getElementById("sixth").innerHTML = trialarray[trialnumber][0][5];
+    if (presStyle == "sequential") {
 
+	var presdelays = [0,300,300,300,300,300];
+
+	document.getElementById("first").style.display = "none";
+	document.getElementById("second").style.display = "none";
+	document.getElementById("third").style.display = "none";
+	document.getElementById("fourth").style.display = "none";
+	document.getElementById("fifth").style.display = "none";
+	document.getElementById("sixth").style.display = "none";
+	document.getElementById("single").style.display = "inline";
+	document.getElementById("single").innerHTML = " ";
+
+	var ix = 0;
+	while(trialarray[trialnumber][0][ix] == "#") {ix++;}
+
+	var dataMEM = trialarray[trialnumber][0].slice(ix,6-ix);
+	var currItem = document.getElementById("single");
+	console.log(dataMEM);
+	function updateCurrItem(k) {currItem.innerHTML = dataMEM[k];}
+	Delays[2] = 300*(dataMEM.length);
+
+	(function chainElements(i) {
+	    if (i > dataMEM.length ){
+		currItem.innerHTML = " ";
+		return;
+	    }
+	    $.post("/indlett");
+	    timehandle = window.setTimeout(function() {
+		    updateCurrItem(i);
+		    chainElements(i + 1);
+		},presdelays[i]);
+	}(0));
+    }
+    else {
+	document.getElementById("single").style.display = "none";
+	
+	document.getElementById("first").style.display = "inline";
+	document.getElementById("second").style.display = "inline";
+	document.getElementById("third").style.display = "inline";
+	document.getElementById("fourth").style.display = "inline";
+	document.getElementById("fifth").style.display = "inline";
+	document.getElementById("sixth").style.display = "inline";
+	
+	document.getElementById("first").innerHTML = trialarray[trialnumber][0][0];
+	document.getElementById("second").innerHTML = trialarray[trialnumber][0][1];
+	document.getElementById("third").innerHTML = trialarray[trialnumber][0][2];
+	document.getElementById("fourth").innerHTML = trialarray[trialnumber][0][3];
+	document.getElementById("fifth").innerHTML = trialarray[trialnumber][0][4];
+	document.getElementById("sixth").innerHTML = trialarray[trialnumber][0][5];
+    }
     document.getElementById("options").style.display = "none";
     document.getElementById("match").style.display = "none";
     document.getElementById("nomatch").style.display = "none";
@@ -221,6 +301,8 @@ function DisplayProbe(trialnumber,trialarray) {
     available = true;
 
     document.getElementById("circle").style.display = "none";
+    document.getElementById("single").style.display = "none";
+
     document.getElementById("first").style.display = "inline";
     document.getElementById("second").style.display = "inline";
     document.getElementById("third").style.display = "inline";
@@ -236,9 +318,29 @@ function DisplayProbe(trialnumber,trialarray) {
     document.getElementById("sixth").innerHTML = trialarray[trialnumber][1][5];
 
     document.getElementById("options").style.display = "block";
-
     document.getElementById("match").style.display = "inline";
     document.getElementById("nomatch").style.display = "inline";
+}
+
+function DisplaySingle(trialnumber,trialarray) {
+    $.post("/single");
+    ResponseWindow[TrialNumber] = DisplayCallTime("Probe");
+    available = true;
+    
+    document.getElementById("circle").style.display = "none";
+    document.getElementById("single").style.display = "inline";
+
+    document.getElementById("first").style.display = "none";
+    document.getElementById("second").style.display = "none";
+    document.getElementById("fourth").style.display = "none";
+    document.getElementById("fifth").style.display = "none";
+    document.getElementById("sixth").style.display = "none";
+
+    document.getElementById("single").innerHTML = trialarray[trialnumber][2];
+
+    document.getElementById("options").style.display = "block";
+    document.getElementById("match").style.display = "inline";
+    document.getElementById("nomatch").style.display = "inline";    
 }
 
 function ClearScreen(){
@@ -249,6 +351,7 @@ function ClearScreen(){
     document.getElementById("container").style.backgroundColor="white";
 
     document.getElementById("circle").style.display = "none";
+    document.getElementById("single").style.display = "none";
     document.getElementById("first").style.display = "none";
     document.getElementById("second").style.display = "none";
     document.getElementById("third").style.display = "none";
@@ -268,6 +371,7 @@ function RestScreen(){
 
     document.getElementById("container").style.backgroundColor="grey";
 
+    document.getElementById("single").style.display = "none";
     document.getElementById("circle").style.display = "none";
     document.getElementById("first").style.display = "none";
     document.getElementById("second").style.display = "none";
@@ -294,8 +398,6 @@ function playTone() {
     createjs.Sound.play("Music");
 }
 
-var timehandle;
-
 function SetUpTrial(trialnumber,trialset,delay) {
     if (trialnumber >= trialset.length) {
 	var data2send = prepData(TrialNumber);
@@ -305,12 +407,22 @@ function SetUpTrial(trialnumber,trialset,delay) {
     ClearScreen();
     console.log("Trial Number: "+trialnumber);
     TrialNumber = trialnumber+1;
-    var seq = [function() {playTone();},
-               function() {DisplayMemorySet(trialnumber,trialset);},
-               function() {DrawCircle();},
-               function() {DisplayProbe(trialnumber,trialset);},
-               function() {RestScreen();},
-               function() {SetUpTrial(TrialNumber,Trials,Delays)}];
+    if (testType == "single") {
+	var seq = [function() {playTone();},
+		   function() {DisplayMemorySet(trialnumber,trialset);},
+		   function() {DrawCircle();},
+		   function() {DisplaySingle(trialnumber,trialset);},
+		   function() {RestScreen();},
+		   function() {SetUpTrial(TrialNumber,Trials,Delays)}];
+    }
+    else {
+	var seq = [function() {playTone();},
+		   function() {DisplayMemorySet(trialnumber,trialset);},
+		   function() {DrawCircle();},
+		   function() {DisplayProbe(trialnumber,trialset);},
+		   function() {RestScreen();},
+		   function() {SetUpTrial(TrialNumber,Trials,Delays)}];
+    }
 
     (function chain(i) {
         if (i >= 6 || typeof seq[i] !== 'function')
@@ -325,21 +437,40 @@ function SetUpTrial(trialnumber,trialset,delay) {
 function prepData(currentTrial) {
     var myarray = [];
     var myJSON = [];
-
-    for (var i = 0; i <= currentTrial; i++) {
-	var item = {
-	    "TrialNumber": i,
-	    "MemorySet":Trials[i][0],
-	    "Probe":Trials[i][1],
-	    "TrialStarTime":TrialStart[i],
-	    "TrialPresentation":Presentation[i],
-	    "TrialFixation":Fixation[i],
-	    "ResponseWindow":ResponseWindow[i],
-	    "ResponseTime":Responded[i],
-	    "Rest":Rest[i],
-	    "Interrupt":Interrupted[i],
-	};
-	myarray.push(item);
+    
+    if (testType == "single") {
+	for (var i = 0; i <=currentTrial; i++) {
+	    var item = {
+		"TrialNumber": i,
+		"MemorySet":Trials[i][0],
+		"Probe":Trials[i][2],
+		"TrialStarTime":TrialStart[i],
+		"TrialPresentation":Presentation[i],
+		"TrialFixation":Fixation[i],
+		"ResponseWindow":ResponseWindow[i],
+		"ResponseTime":Responded[i],
+		"Rest":Rest[i],
+		"Interrupt":Interrupted[i],
+	    };
+	    myarray.push(item);
+	}
+    }
+    else {
+	for (var i = 0; i <= currentTrial; i++) {
+	    var item = {
+		"TrialNumber": i,
+		"MemorySet":Trials[i][0],
+		"Probe":Trials[i][1],
+		"TrialStarTime":TrialStart[i],
+		"TrialPresentation":Presentation[i],
+		"TrialFixation":Fixation[i],
+		"ResponseWindow":ResponseWindow[i],
+		"ResponseTime":Responded[i],
+		"Rest":Rest[i],
+		"Interrupt":Interrupted[i],
+	    };
+	    myarray.push(item);
+	}
     }
     myJSON = JSON.stringify({data: myarray});
     return myJSON;

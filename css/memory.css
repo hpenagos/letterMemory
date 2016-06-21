@@ -61,9 +61,9 @@ body, html {
     font-align:center;
     vertical-align:middle;
     height:100%;
-    width:30%;
-    top:-80%;
-    left:10%;
+    width:40%;
+    top:-95%;
+    left:5%;
 }
 
 #nomatch {
@@ -73,9 +73,9 @@ body, html {
     font-align:center;
     vertical-align:middle;
     height:100%;
-    width:30%;
-    top:-80%;
-    left:60%;
+    width:40%;
+    top:-95%;
+    left:55%;
 }    
 
 #container {
@@ -122,4 +122,8 @@ body, html {
 
 #sixth {
     left:85%;
+}
+
+#single {
+    left:42.5%;
 }
